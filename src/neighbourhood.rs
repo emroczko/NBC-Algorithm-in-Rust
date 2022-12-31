@@ -57,6 +57,17 @@ fn init<T: Dimension>(vectors: &Array<f64, T>) -> (Knb, Rknb) {
     return (knb, r_knb);
 }
 
+fn ndf(knb: Knb, r_knb: Rknb) -> Ndf {
+    let mut ndf = HashMap::new();
+
+    for k in knb.keys() {
+        let k_objects = knb.get(k).expect("A").len();
+        let r_objects = r_knb.get(k).expect("R").len();
+        let _ = ndf.insert(*k, (r_objects / k_objects) as f64);
+    }
+    return ndf;
+}
+
 #[cfg(test)]
 mod tests {
     use crate::neighbourhood::{ndf, neighbourhood, Knb, Rknb};
@@ -96,10 +107,19 @@ mod tests {
         assert_eq!(expected_r_knb, r_knb);
     }
 
-        println!("{:?}", expected_knb);
+    #[test]
+    fn test_ndf() {
+        let k = 2 as usize;
+        let vectors = array!([
+            [0.0, 0.0, 0.0, 0.0],
+            [1.0, 1.0, 1.0, 1.0],
+            [2.0, 2.0, 1.0, 1.0],
+            [3.0, 4.0, 1.0, 1.0],
+            [3.0, 4.0, 1.0, 1.0],
+        ]);
 
         let (knb, r_knb) = neighbourhood(vectors, k);
-        println!("{:?}", knb);
-        println!("{:?}", r_knb);
+
+        let _ = ndf(knb, r_knb);
     }
 }
