@@ -2,12 +2,12 @@ use ndarray::prelude::*;
 use ndarray_stats::DeviationExt;
 use std::collections::{HashMap, HashSet};
 
-type RowId = i32;
-type Knb = HashMap<RowId, HashSet<i32>>;
-type Ndf = HashMap<RowId, f64>;
-type Rknb = HashMap<RowId, HashSet<i32>>;
+pub type RowId = i32;
+pub type Knb = HashMap<RowId, HashSet<i32>>;
+pub type Ndf = HashMap<RowId, f64>;
+pub type Rknb = HashMap<RowId, HashSet<i32>>;
 
-fn neighbourhood<T: Dimension>(vectors: Array<f64, T>, k: usize) -> (Knb, Rknb) {
+pub fn neighbourhood<T: Dimension>(vectors: &Array<f64, T>, k: i32) -> (Knb, Rknb) {
     let (mut knb, mut r_knb) = init(&vectors); // init knb and r_knb dicts
 
     for (row_index_1, row_1) in vectors.rows().into_iter().enumerate() {
@@ -21,7 +21,10 @@ fn neighbourhood<T: Dimension>(vectors: Array<f64, T>, k: usize) -> (Knb, Rknb) 
         }
 
         neighbour_candidates.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
-        let eps = neighbour_candidates[0..k].last().expect("Set is empty").1;
+        let eps = neighbour_candidates[0..k as usize]
+            .last()
+            .expect("Set is empty")
+            .1;
 
         let mut neighbours: HashSet<RowId> = HashSet::new();
 
@@ -43,6 +46,17 @@ fn neighbourhood<T: Dimension>(vectors: Array<f64, T>, k: usize) -> (Knb, Rknb) 
     return (knb, r_knb);
 }
 
+pub fn ndf(knb: &Knb, r_knb: &Rknb) -> Ndf {
+    let mut ndf = HashMap::new();
+
+    for k in knb.keys() {
+        let k_objects = knb.get(k).expect("A").len() as f64;
+        let r_objects = r_knb.get(k).expect("R").len() as f64;
+        let _ = ndf.insert(*k, r_objects / k_objects);
+    }
+    return ndf;
+}
+
 fn init<T: Dimension>(vectors: &Array<f64, T>) -> (Knb, Rknb) {
     let knb = HashMap::new();
     let mut r_knb = HashMap::new();
@@ -57,17 +71,6 @@ fn init<T: Dimension>(vectors: &Array<f64, T>) -> (Knb, Rknb) {
     return (knb, r_knb);
 }
 
-fn ndf(knb: Knb, r_knb: Rknb) -> Ndf {
-    let mut ndf = HashMap::new();
-
-    for k in knb.keys() {
-        let k_objects = knb.get(k).expect("A").len() as f64;
-        let r_objects = r_knb.get(k).expect("R").len() as f64;
-        let _ = ndf.insert(*k, r_objects / k_objects);
-    }
-    return ndf;
-}
-
 #[cfg(test)]
 mod tests {
     use crate::neighbourhood::{ndf, neighbourhood, Knb, Ndf, Rknb};
@@ -76,7 +79,7 @@ mod tests {
 
     #[test]
     fn test_neighbours() {
-        let k = 2 as usize;
+        let k = 2;
         let vectors = array!([
             [0.0, 0.0, 0.0, 0.0],
             [1.0, 1.0, 1.0, 1.0],
@@ -101,7 +104,7 @@ mod tests {
             (4, HashSet::from_iter([2, 3])),
         ]);
 
-        let (knb, r_knb) = neighbourhood(vectors, k);
+        let (knb, r_knb) = neighbourhood(&vectors, k);
 
         assert_eq!(expected_knb, knb);
         assert_eq!(expected_r_knb, r_knb);
@@ -109,7 +112,7 @@ mod tests {
 
     #[test]
     fn test_ndf() {
-        let k = 2 as usize;
+        let k = 2;
         let vectors = array!([
             [0.0, 0.0, 0.0, 0.0],
             [1.0, 1.0, 1.0, 1.0],
@@ -126,8 +129,8 @@ mod tests {
             (4, 1.0),
         ]);
 
-        let (knb, r_knb) = neighbourhood(vectors, k);
-        let ndf = ndf(knb, r_knb);
+        let (knb, r_knb) = neighbourhood(&vectors, k);
+        let ndf = ndf(&knb, &r_knb);
 
         assert_eq!(expected_ndf, ndf);
     }
