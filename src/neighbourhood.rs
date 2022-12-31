@@ -1,12 +1,6 @@
 use ndarray::prelude::*;
-use ndarray::Ix;
 use ndarray_stats::DeviationExt;
-use std::borrow::BorrowMut;
 use std::collections::{HashMap, HashSet};
-use std::env::var;
-use std::hash::Hash;
-use std::ops::Index;
-use std::ptr::null;
 
 type RowId = i32;
 type Knb = HashMap<RowId, HashSet<i32>>;
@@ -31,11 +25,11 @@ fn neighbourhood<T: Dimension>(vectors: Array<f64, T>, k: usize) -> (Knb, Rknb) 
 
         let mut neighbours: HashSet<RowId> = HashSet::new();
 
-        for (rowId, distance) in neighbour_candidates {
+        for (row_id, distance) in neighbour_candidates {
             if distance > eps {
                 break;
             }
-            neighbours.insert(rowId);
+            neighbours.insert(row_id);
         }
 
         for neighbour in &neighbours {
@@ -50,7 +44,7 @@ fn neighbourhood<T: Dimension>(vectors: Array<f64, T>, k: usize) -> (Knb, Rknb) 
 }
 
 fn init<T: Dimension>(vectors: &Array<f64, T>) -> (Knb, Rknb) {
-    let mut knb = HashMap::new();
+    let knb = HashMap::new();
     let mut r_knb = HashMap::new();
 
     for i in 0..*vectors
@@ -65,15 +59,14 @@ fn init<T: Dimension>(vectors: &Array<f64, T>) -> (Knb, Rknb) {
 
 #[cfg(test)]
 mod tests {
-    use crate::neighbourhood::neighbourhood;
-    use ndarray::{arr2, array, Array, Axis, NdProducer};
-    use ndarray_stats::DeviationExt;
-    use std::collections::HashMap;
+    use crate::neighbourhood::{ndf, neighbourhood, Knb, Rknb};
+    use ndarray::array;
+    use std::collections::{HashMap, HashSet};
 
     #[test]
     fn test_neighbours() {
         let k = 2 as usize;
-        let mut vectors = array!([
+        let vectors = array!([
             [0.0, 0.0, 0.0, 0.0],
             [1.0, 1.0, 1.0, 1.0],
             [2.0, 2.0, 1.0, 1.0],
@@ -81,7 +74,27 @@ mod tests {
             [3.0, 4.0, 1.0, 1.0],
         ]);
 
-        let expected_knb = HashMap::from([("Norway", 25), ("Denmark", 24), ("Iceland", 12)]);
+        let expected_knb: Knb = HashMap::from([
+            (0, HashSet::from_iter([1, 2])),
+            (1, HashSet::from_iter([0, 2])),
+            (2, HashSet::from_iter([1, 3, 4])),
+            (3, HashSet::from_iter([2, 4])),
+            (4, HashSet::from_iter([2, 3])),
+        ]);
+
+        let expected_r_knb: Rknb = HashMap::from([
+            (0, HashSet::from_iter([1])),
+            (1, HashSet::from_iter([0, 2])),
+            (2, HashSet::from_iter([0, 1, 3, 4])),
+            (3, HashSet::from_iter([2, 4])),
+            (4, HashSet::from_iter([2, 3])),
+        ]);
+
+        let (knb, r_knb) = neighbourhood(vectors, k);
+
+        assert_eq!(expected_knb, knb);
+        assert_eq!(expected_r_knb, r_knb);
+    }
 
         println!("{:?}", expected_knb);
 
