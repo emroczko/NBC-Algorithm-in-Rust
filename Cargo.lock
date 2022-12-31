@@ -3,14 +3,6 @@
 version = 3
 
 [[package]]
-name = "NBC_rust"
-version = "0.1.0"
-dependencies = [
- "ndarray",
- "ndarray-stats",
-]
-
-[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -77,6 +69,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "add85d4dd35074e6fedc608f8c8f513a3548619a9024b751949ef0e8e45a4d84"
 dependencies = [
  "rawpointer",
+]
+
+[[package]]
+name = "nbc_rust"
+version = "0.1.0"
+dependencies = [
+ "ndarray",
+ "ndarray-stats",
 ]
 
 [[package]]

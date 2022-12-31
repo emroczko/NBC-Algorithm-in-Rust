@@ -1,11 +1,6 @@
-use std::collections::{HashMap, HashSet};
-use std::env::var;
-use std::hash::Hash;
-use std::ptr::null;
-use ndarray::prelude::*;
+use std::collections::HashMap;
 
-fn nbc(dataset: Vec<String>, k: i32) {
-
+fn nbc(dataset: Vec<String>, _k: i32) {
     let mut clusters = HashMap::new();
 
     for point in dataset {
