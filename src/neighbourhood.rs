@@ -61,16 +61,16 @@ fn ndf(knb: Knb, r_knb: Rknb) -> Ndf {
     let mut ndf = HashMap::new();
 
     for k in knb.keys() {
-        let k_objects = knb.get(k).expect("A").len();
-        let r_objects = r_knb.get(k).expect("R").len();
-        let _ = ndf.insert(*k, (r_objects / k_objects) as f64);
+        let k_objects = knb.get(k).expect("A").len() as f64;
+        let r_objects = r_knb.get(k).expect("R").len() as f64;
+        let _ = ndf.insert(*k, r_objects / k_objects);
     }
     return ndf;
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::neighbourhood::{ndf, neighbourhood, Knb, Rknb};
+    use crate::neighbourhood::{ndf, neighbourhood, Knb, Ndf, Rknb};
     use ndarray::array;
     use std::collections::{HashMap, HashSet};
 
@@ -118,8 +118,17 @@ mod tests {
             [3.0, 4.0, 1.0, 1.0],
         ]);
 
-        let (knb, r_knb) = neighbourhood(vectors, k);
+        let expected_ndf: Ndf = HashMap::from([
+            (0, 0.5),
+            (1, 1.0),
+            (2, 1.3333333333333333),
+            (3, 1.0),
+            (4, 1.0),
+        ]);
 
-        let _ = ndf(knb, r_knb);
+        let (knb, r_knb) = neighbourhood(vectors, k);
+        let ndf = ndf(knb, r_knb);
+
+        assert_eq!(expected_ndf, ndf);
     }
 }
