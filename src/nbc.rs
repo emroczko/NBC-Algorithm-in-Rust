@@ -1,20 +1,22 @@
 use crate::neighbourhood::{ndf, neighbourhood, Ndf, RowId};
-use ndarray::{Array, Dimension};
-use std::collections::HashMap;
+use ndarray::Array2;
+use std::collections::{BTreeMap, HashMap};
 
-pub fn nbc<T: Dimension>(vectors: Array<f64, T>, k: i32) -> HashMap<RowId, i32> {
-    let mut clusters: HashMap<RowId, i32> = HashMap::new();
+pub fn nbc(vectors: Array2<f64>, k: i32) -> BTreeMap<RowId, i32> {
+    let mut clusters: BTreeMap<RowId, i32> = BTreeMap::new();
 
     for (point, _) in vectors.rows().into_iter().enumerate() {
-        clusters.insert(point as RowId, -1);
+        clusters.insert(point as RowId, -1); // allocate memory for results
     }
 
     let (knb, r_knb) = neighbourhood(&vectors, k);
     let ndf = ndf(&knb, &r_knb);
     let mut current_cluster_id = 0;
 
-    for (idx, _) in vectors.rows().into_iter().enumerate() {
-        if has_cluster(idx as RowId, &clusters) || is_dense_point(idx as RowId, &ndf) {
+    for (idx, vector) in vectors.rows().into_iter().enumerate() {
+        // println!("Row {}, vector: {:?}", idx, vector);
+
+        if has_cluster(idx as RowId, &clusters) || !is_dense_point(idx as RowId, &ndf) {
             continue;
         }
 
@@ -49,12 +51,12 @@ pub fn nbc<T: Dimension>(vectors: Array<f64, T>, k: i32) -> HashMap<RowId, i32> 
     return clusters;
 }
 
-fn has_cluster(idx: RowId, clusters: &HashMap<RowId, i32>) -> bool {
-    return *clusters.get(&idx).expect("AA") >= 1;
+fn has_cluster(idx: RowId, clusters: &BTreeMap<RowId, i32>) -> bool {
+    return *clusters.get(&idx).expect("AA") != -1;
 }
 
 fn is_dense_point(idx: RowId, ndf: &Ndf) -> bool {
-    return *ndf.get(&idx).expect("BB") != -1 as f64;
+    return *ndf.get(&idx).expect("BB") >= 1 as f64;
 }
 
 #[cfg(test)]
