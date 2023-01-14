@@ -4,7 +4,7 @@ use std::io;
 use std::io::BufRead;
 use std::path::Path;
 
-pub fn read_vectors_from_file(file_name: &str, dimension: usize) -> ArrayBase<OwnedRepr<f64>, Ix2> {
+pub fn read_vectors_from_file(file_name: &str, dimension: usize) -> Array2<f64> {
     let lines = read_lines(file_name).expect("File does not exist!");
 
     let mut nrows = 0;
