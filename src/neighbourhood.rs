@@ -7,7 +7,7 @@ pub type Knb = HashMap<RowId, HashSet<i32>>;
 pub type Ndf = HashMap<RowId, f64>;
 pub type Rknb = HashMap<RowId, HashSet<i32>>;
 
-pub fn neighbourhood<T: Dimension>(vectors: &Array<f64, T>, k: i32) -> (Knb, Rknb) {
+pub fn neighbourhood(vectors: &Array2<f64>, k: i32) -> (Knb, Rknb) {
     let (mut knb, mut r_knb) = init(&vectors); // init knb and r_knb dicts
 
     for (row_index_1, row_1) in vectors.rows().into_iter().enumerate() {
@@ -37,8 +37,8 @@ pub fn neighbourhood<T: Dimension>(vectors: &Array<f64, T>, k: i32) -> (Knb, Rkn
 
         for neighbour in &neighbours {
             let _ = r_knb
-                .get_mut(&neighbour)
-                .expect("Err")
+                .entry(*neighbour)
+                .or_insert(HashSet::new())
                 .insert(row_index_1 as i32);
         }
         knb.insert(row_index_1 as RowId, neighbours);
@@ -80,13 +80,13 @@ mod tests {
     #[test]
     fn test_neighbours() {
         let k = 2;
-        let vectors = array!([
+        let vectors = array!(
             [0.0, 0.0, 0.0, 0.0],
             [1.0, 1.0, 1.0, 1.0],
             [2.0, 2.0, 1.0, 1.0],
             [3.0, 4.0, 1.0, 1.0],
             [3.0, 4.0, 1.0, 1.0],
-        ]);
+        );
 
         let expected_knb: Knb = HashMap::from([
             (0, HashSet::from_iter([1, 2])),
@@ -113,13 +113,13 @@ mod tests {
     #[test]
     fn test_ndf() {
         let k = 2;
-        let vectors = array!([
+        let vectors = array!(
             [0.0, 0.0, 0.0, 0.0],
             [1.0, 1.0, 1.0, 1.0],
             [2.0, 2.0, 1.0, 1.0],
             [3.0, 4.0, 1.0, 1.0],
             [3.0, 4.0, 1.0, 1.0],
-        ]);
+        );
 
         let expected_ndf: Ndf = HashMap::from([
             (0, 0.5),
