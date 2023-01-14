@@ -57,7 +57,7 @@ pub fn ndf(knb: &Knb, r_knb: &Rknb) -> Ndf {
     return ndf;
 }
 
-fn init<T: Dimension>(vectors: &Array<f64, T>) -> (Knb, Rknb) {
+fn init(vectors: &Array2<f64>) -> (Knb, Rknb) {
     let knb = HashMap::new();
     let mut r_knb = HashMap::new();
 

@@ -2,7 +2,7 @@ use crate::neighbourhood::{ndf, neighbourhood, Ndf, RowId};
 use ndarray::Array2;
 use std::collections::{BTreeMap, HashMap};
 
-pub fn nbc(vectors: Array2<f64>, k: i32) -> BTreeMap<RowId, i32> {
+pub fn nbc(vectors: &Array2<f64>, k: i32) -> BTreeMap<RowId, i32> {
     let mut clusters: BTreeMap<RowId, i32> = BTreeMap::new();
 
     for (point, _) in vectors.rows().into_iter().enumerate() {
