@@ -1,6 +1,6 @@
 use crate::neighbourhood::{ndf, neighbourhood, Ndf, RowId};
 use ndarray::Array2;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::btree_map::BTreeMap;
 
 pub fn nbc(vectors: &Array2<f64>, k: i32) -> BTreeMap<RowId, i32> {
     let mut clusters: BTreeMap<RowId, i32> = BTreeMap::new();
@@ -13,7 +13,7 @@ pub fn nbc(vectors: &Array2<f64>, k: i32) -> BTreeMap<RowId, i32> {
     let ndf = ndf(&knb, &r_knb);
     let mut current_cluster_id = 0;
 
-    for (idx, vector) in vectors.rows().into_iter().enumerate() {
+    for (idx, _) in vectors.rows().into_iter().enumerate() {
         // println!("Row {}, vector: {:?}", idx, vector);
 
         if has_cluster(idx as RowId, &clusters) || !is_dense_point(idx as RowId, &ndf) {
