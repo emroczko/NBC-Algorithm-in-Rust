@@ -32,7 +32,7 @@ pub fn read_vectors_from_file(file_name: &str, dimension: usize) -> Array2<f64> 
     let coordinates_array = Array2::from_shape_vec((nrows, dimension), coordinates)
         .ok()
         .expect("Cannot create array from input data!");
-    // println!("Loaded {} coordinates", coordinates_array.shape()[0]);
+    println!("Loaded {} coordinates", coordinates_array.shape()[0]);
     return coordinates_array;
 }
 
