@@ -7,6 +7,7 @@ pub fn read_vectors_from_file(file_name: &String, dimension: usize) -> Vec<Vec<f
     let lines = read_lines(file_name).expect("File does not exist!");
     let mut coordinates = Vec::new();
 
+    println!("Parsing file {}", file_name);
     for line in lines {
         if let Ok(line) = line {
             if !line.is_empty() && !(line.starts_with("@") || line.starts_with("%")) {
@@ -37,18 +38,22 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-pub fn write_to_file(vectors: &Vec<(f64, f64, i32)>) {
-    let mut file = File::create("foo.txt").expect("Couldn't create file!");
-    for tuple in vectors {
-        let line = format!("{:?}\n", tuple);
+pub fn write_clustering_result_to_file(vectors: &Vec<(Vec<f64>, i32)>, file_path: &String) {
+    let mut file = File::create(file_path).expect("Couldn't create file!");
+    for (vector, cluster) in vectors {
+        let mut coords: String = "".to_string();
+        for coord in vector {
+            coords = format!("{},{}", coords, coord);
+        }
+        let line = format!("{},{}\n", coords.strip_prefix(",").unwrap(), cluster);
         file.write_all(line.as_ref()).expect("Unable to write data");
     }
-    println!("Results saved to file {}", "foo");
+    println!("Results saved to file {}", file_path);
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::vector_manager::read_vectors_from_file;
+    use crate::file_manager::read_vectors_from_file;
 
     #[test]
     fn test_read_vectors_from_file() {
