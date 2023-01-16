@@ -1,9 +1,9 @@
 use std::fs::File;
 use std::io;
-use std::io::BufRead;
+use std::io::{BufRead, Write};
 use std::path::Path;
 
-pub fn read_vectors_from_file(file_name: &str, dimension: usize) -> Vec<Vec<f64>> {
+pub fn read_vectors_from_file(file_name: &String, dimension: usize) -> Vec<Vec<f64>> {
     let lines = read_lines(file_name).expect("File does not exist!");
     let mut coordinates = Vec::new();
 
@@ -37,12 +37,21 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
+pub fn write_to_file(vectors: &Vec<(f64, f64, i32)>) {
+    let mut file = File::create("foo.txt").expect("Couldn't create file!");
+    for tuple in vectors {
+        let line = format!("{:?}\n", tuple);
+        file.write_all(line.as_ref()).expect("Unable to write data");
+    }
+    println!("Results saved to file {}", "foo");
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::vector_reader::read_vectors_from_file;
+    use crate::vector_manager::read_vectors_from_file;
 
     #[test]
     fn test_read_vectors_from_file() {
-        read_vectors_from_file("dataset1.txt", 2);
+        read_vectors_from_file(&"dataset1.txt".to_string(), 2);
     }
 }
