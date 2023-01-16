@@ -14,26 +14,27 @@ fn euclidean_distance(v1: &Vec<f64>, v2: &Vec<f64>) -> f64 {
 }
 
 pub fn neighbourhood(vectors: &Vec<Vec<f64>>, k: i32) -> (Knb, Rknb) {
-    let (mut knb, mut r_knb) = init(&vectors); // init knb and r_knb dicts
+    let (mut knb, mut r_knb) = init(&vectors); // allocate knb and r_knb dicts
 
     for (row_index_1, row_1) in vectors.iter().enumerate() {
         let mut neighbour_candidates: Vec<(RowId, f64)> = Vec::new();
 
         for (row_index_2, row_2) in vectors.iter().enumerate() {
             if row_index_1 != row_index_2 {
+                // for each different object count euclidean distance and add it to neighbour candidates
                 let dist = euclidean_distance(row_1, row_2);
                 neighbour_candidates.push((row_index_2 as RowId, dist));
             }
         }
 
+        // sorting candidates by distance ascending
         neighbour_candidates.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
-        let eps = neighbour_candidates[0..k as usize]
-            .last()
-            .expect("Set is empty")
-            .1;
+        // eps is distance of k-th candidate in sorted candidates
+        let eps = neighbour_candidates[(k - 1) as usize].1;
 
         let mut neighbours: HashSet<RowId> = HashSet::new();
 
+        // if distance is smaller than or equal to eps then it is a nearest neighbour. There may be more neighbours tham k value
         for (row_id, distance) in neighbour_candidates {
             if distance > eps {
                 break;
