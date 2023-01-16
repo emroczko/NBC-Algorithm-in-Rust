@@ -1,5 +1,3 @@
-use ndarray::prelude::*;
-use ndarray_stats::DeviationExt;
 use std::collections::{HashMap, HashSet};
 
 pub type RowId = i32;
@@ -7,16 +5,24 @@ pub type Knb = HashMap<RowId, HashSet<i32>>;
 pub type Ndf = HashMap<RowId, f64>;
 pub type Rknb = HashMap<RowId, HashSet<i32>>;
 
-pub fn neighbourhood(vectors: &Array2<f64>, k: i32) -> (Knb, Rknb) {
+fn euclidean_distance(v1: &Vec<f64>, v2: &Vec<f64>) -> f64 {
+    let mut distance = 0.0;
+    for i in 0..v1.len() {
+        distance += (v1[i] - v2[i]).powf(2.0);
+    }
+    return distance.sqrt();
+}
+
+pub fn neighbourhood(vectors: &Vec<Vec<f64>>, k: i32) -> (Knb, Rknb) {
     let (mut knb, mut r_knb) = init(&vectors); // init knb and r_knb dicts
 
-    for (row_index_1, row_1) in vectors.rows().into_iter().enumerate() {
+    for (row_index_1, row_1) in vectors.iter().enumerate() {
         let mut neighbour_candidates: Vec<(RowId, f64)> = Vec::new();
 
-        for (row_index_2, row_2) in vectors.rows().into_iter().enumerate() {
+        for (row_index_2, row_2) in vectors.iter().enumerate() {
             if row_index_1 != row_index_2 {
-                let dist = row_1.l2_dist(&row_2);
-                neighbour_candidates.push((row_index_2 as RowId, dist.ok().expect("Error")));
+                let dist = euclidean_distance(row_1, row_2);
+                neighbour_candidates.push((row_index_2 as RowId, dist));
             }
         }
 
@@ -57,15 +63,11 @@ pub fn ndf(knb: &Knb, r_knb: &Rknb) -> Ndf {
     return ndf;
 }
 
-fn init(vectors: &Array2<f64>) -> (Knb, Rknb) {
+fn init(vectors: &Vec<Vec<f64>>) -> (Knb, Rknb) {
     let knb = HashMap::new();
     let mut r_knb = HashMap::new();
 
-    for i in 0..*vectors
-        .shape()
-        .get(1)
-        .expect("Input vector dimension error!")
-    {
+    for i in 0..vectors.len() {
         r_knb.insert(i as RowId, HashSet::new());
     }
     return (knb, r_knb);

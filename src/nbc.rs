@@ -1,24 +1,23 @@
 use crate::neighbourhood::{ndf, neighbourhood, Ndf, RowId};
-use ndarray::Array2;
 use std::collections::btree_map::BTreeMap;
 use std::time::Instant;
 
-pub fn nbc(vectors: &Array2<f64>, k: i32) -> BTreeMap<RowId, i32> {
+pub fn nbc(vectors: &Vec<Vec<f64>>, k: i32) -> BTreeMap<RowId, i32> {
     let mut clusters: BTreeMap<RowId, i32> = BTreeMap::new();
 
-    for (point, _) in vectors.rows().into_iter().enumerate() {
+    for (point, _) in vectors.iter().enumerate() {
         clusters.insert(point as RowId, -1); // allocate memory for results
     }
 
     let start = Instant::now();
-    let (knb, r_knb) = neighbourhood(&vectors, k);
+    let (knb, r_knb) = neighbourhood(vectors, k);
     let duration = start.elapsed();
     println!("Exploring neighbourhood took: {:?}", duration);
 
     let ndf = ndf(&knb, &r_knb);
     let mut current_cluster_id = 0;
 
-    for (idx, _) in vectors.rows().into_iter().enumerate() {
+    for (idx, _) in vectors.iter().enumerate() {
         // println!("Row {}, vector: {:?}", idx, vector);
 
         if has_cluster(idx as RowId, &clusters) || !is_dense_point(&(idx as RowId), &ndf) {

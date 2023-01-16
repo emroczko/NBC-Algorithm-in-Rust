@@ -1,13 +1,10 @@
-use ndarray::Array2;
 use std::fs::File;
 use std::io;
 use std::io::BufRead;
 use std::path::Path;
 
-pub fn read_vectors_from_file(file_name: &str, dimension: usize) -> Array2<f64> {
+pub fn read_vectors_from_file(file_name: &str, dimension: usize) -> Vec<Vec<f64>> {
     let lines = read_lines(file_name).expect("File does not exist!");
-
-    let mut nrows = 0;
     let mut coordinates = Vec::new();
 
     for line in lines {
@@ -20,8 +17,7 @@ pub fn read_vectors_from_file(file_name: &str, dimension: usize) -> Array2<f64> 
                     .filter_map(|s| s.parse().ok())
                     .collect();
                 if coordinate.len() == dimension {
-                    coordinates.extend_from_slice(&coordinate);
-                    nrows += 1;
+                    coordinates.push(coordinate);
                 } else {
                     println!("Line corrupted: {:?}", line)
                 }
@@ -29,11 +25,8 @@ pub fn read_vectors_from_file(file_name: &str, dimension: usize) -> Array2<f64> 
         }
     }
 
-    let coordinates_array = Array2::from_shape_vec((nrows, dimension), coordinates)
-        .ok()
-        .expect("Cannot create array from input data!");
-    println!("Loaded {} coordinates", coordinates_array.shape()[0]);
-    return coordinates_array;
+    println!("Loaded {} coordinates", coordinates.len());
+    return coordinates;
 }
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
