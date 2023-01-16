@@ -1,7 +1,8 @@
 use plotters::prelude::*;
 
-pub fn draw_clustered_data(data: &Vec<(f64, f64, i32)>) {
-    let root_area = BitMapBackend::new("clustered.png", (600, 400)).into_drawing_area();
+pub fn draw_clustered_data(data: &Vec<(f64, f64, i32)>, file_name: &str) {
+    let file_path = &format!("plotted/{}.png", file_name);
+    let root_area = BitMapBackend::new(file_path, (600, 400)).into_drawing_area();
     root_area.fill(&WHITE).unwrap();
 
     let mut ctx = ChartBuilder::on(&root_area)
