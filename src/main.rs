@@ -142,7 +142,12 @@ fn perform_nbc_tests(args: &Args) {
         let existing_path = path.ok();
 
         if let Some(file) = existing_path {
-            let file_name = &file.file_name().to_string_lossy().into_owned();
+            let file_name = &file.path().to_string_lossy().to_string();
+
+            if file_name.contains("DS_Store") {
+                continue;
+            }
+
             let vectors_data = read_vectors_from_file(file_name, dimension);
 
             if vectors_data.len() < k_value as usize {

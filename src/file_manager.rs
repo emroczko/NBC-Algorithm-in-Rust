@@ -10,7 +10,8 @@ pub struct VectorData {
 }
 
 pub fn read_vectors_from_file(file_name: &String, dimension: usize) -> Vec<VectorData> {
-    let lines = read_lines(file_name).expect("Dataset file does not exist!");
+    let lines =
+        read_lines(file_name).expect(&*format!("Dataset file {} does not exist!", file_name));
     let mut vectors_data: Vec<VectorData> = Vec::new();
 
     println!("Parsing file {}", file_name);
