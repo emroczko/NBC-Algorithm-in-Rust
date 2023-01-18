@@ -1,6 +1,6 @@
 use crate::drawer::{draw_clustering_data, PlotType};
 use crate::file_manager::{
-    read_vectors_from_file, write_clustering_result_to_file, write_times_result_to_file, VectorData,
+    read_vectors_from_file, write_clustering_result_to_file, write_times_result_to_file,
 };
 use crate::nbc::nbc;
 use crate::vector_manager::{convert_vector_data, get_number_of_groups, merge_data, rand_index};

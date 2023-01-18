@@ -1,4 +1,3 @@
-use crate::exit_with_message;
 use crate::file_manager::VectorData;
 use crate::neighbourhood::RowId;
 use std::collections::{BTreeMap, HashSet};
