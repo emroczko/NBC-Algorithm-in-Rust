@@ -3,10 +3,8 @@ use crate::file_manager::{
     read_vectors_from_file, write_clustering_result_to_file, write_times_result_to_file, VectorData,
 };
 use crate::nbc::nbc;
-use crate::neighbourhood::RowId;
+use crate::vector_manager::{convert_vector_data, get_number_of_groups, merge_data, rand_index};
 use clap::Parser;
-use std::collections::btree_map::BTreeMap;
-use std::collections::HashSet;
 use std::fs;
 use std::process::exit;
 use std::time::{Duration, Instant};
@@ -15,6 +13,7 @@ mod drawer;
 mod file_manager;
 mod nbc;
 mod neighbourhood;
+mod vector_manager;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -22,7 +21,7 @@ struct Args {
     /// File with dataset to perform NBC on
     #[arg(short, long)]
     file_with_dataset: Option<String>,
-    /// Dataset dimension. Required
+    /// Dataset dimension
     #[arg(short, long)]
     dataset_dimension: usize,
     /// K value - to create k-neighbourhoods
@@ -39,31 +38,23 @@ struct Args {
     test_mode_datasets_path: Option<String>,
 }
 
+pub fn exit_with_message(message: &str) {
+    println!("{}", message);
+    exit(1)
+}
+
 fn parse_args(args: &Args) {
     if args.test_mode_datasets_path.is_none() && args.file_with_dataset.is_none() {
-        println!("You must pass either dataset file or test datasets path!");
-        exit(1)
+        exit_with_message("You must pass either dataset file or test datasets path!");
     }
 
     if args.k_value <= 0 {
-        println!("K value must be bigger than 0!");
-        exit(1)
+        exit_with_message("K value must be bigger than 0!");
     }
 
     if args.dataset_dimension <= 0 {
-        println!("Dataset dimension must be bigger than 0!");
-        exit(1)
+        exit_with_message("Dataset dimension must be bigger than 0!");
     }
-}
-
-fn convert_vector_data(data: &Vec<VectorData>) -> Vec<&[f64]> {
-    let mut vectors = Vec::new();
-
-    for vector_data in data {
-        vectors.push(&vector_data.vector[..]);
-    }
-
-    return vectors;
 }
 
 fn perform_normal_nbc(args: &Args) {
@@ -110,24 +101,6 @@ fn perform_normal_nbc(args: &Args) {
             PlotType::NbcResult,
         );
     }
-}
-
-fn get_number_of_groups(clustered_data: &Vec<VectorData>, original_vectors_data: &Vec<VectorData>) {
-    let original_groups_count = get_unique_values_count(original_vectors_data);
-    let nbc_groups_count = get_unique_values_count(clustered_data);
-
-    println!(
-        "Original dataset has {} groups, NBC found {}",
-        original_groups_count, nbc_groups_count
-    );
-}
-
-fn get_unique_values_count(data: &Vec<VectorData>) -> usize {
-    return data
-        .into_iter()
-        .map(|vector_data| vector_data.class)
-        .collect::<HashSet<i32>>()
-        .len();
 }
 
 fn perform_nbc_tests(args: &Args) {
@@ -178,45 +151,3 @@ fn main() {
         perform_nbc_tests(&args);
     }
 }
-
-fn rand_index(clustered_data: &Vec<VectorData>, original_vectors_data: &Vec<VectorData>) -> f64 {
-    if clustered_data.len() == original_vectors_data.len() {
-        let mut matching_classes = 0f64;
-        let mut all_checked_classes = 0f64;
-        for i in 0..clustered_data.len() - 1 {
-            if clustered_data[i].vector == original_vectors_data[i].vector {
-                all_checked_classes += 1f64;
-                if clustered_data[i].class == original_vectors_data[i].class {
-                    matching_classes += 1f64;
-                }
-            } else {
-                println!("Error between clustered data and input structure!");
-            }
-        }
-        return matching_classes / all_checked_classes;
-    } else {
-        println!("Clustered data length is not the same as data from input file!");
-        exit(0);
-    }
-}
-
-fn merge_data(
-    original_vectors_data: &Vec<VectorData>,
-    clustered_data: &BTreeMap<RowId, i32>,
-) -> Vec<VectorData> {
-    let mut result: Vec<VectorData> = Vec::new();
-    for (index, row) in original_vectors_data.iter().enumerate() {
-        let class = clustered_data
-            .get(&(index as i32))
-            .expect("Could not get group!");
-        result.push(VectorData {
-            vector: row.vector.to_vec(),
-            class: *class,
-        });
-    }
-
-    return result;
-}
-
-#[cfg(test)]
-mod tests {}
