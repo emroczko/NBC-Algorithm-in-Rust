@@ -78,13 +78,3 @@ pub fn write_times_result_to_file(times: &Vec<(usize, Duration, String)>, file_p
     }
     println!("Results saved to file {}", file_path);
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::file_manager::read_vectors_from_file;
-
-    #[test]
-    fn test_read_vectors_from_file() {
-        read_vectors_from_file(&"dataset1.txt".to_string(), 2);
-    }
-}

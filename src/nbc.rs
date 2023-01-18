@@ -60,6 +60,3 @@ fn has_cluster(row_id: RowId, clusters: &BTreeMap<RowId, i32>) -> bool {
 fn is_dense_point(row_id: &RowId, ndf: &Ndf) -> bool {
     return ndf.get(row_id).expect("BB") >= &(1 as f64);
 }
-
-#[cfg(test)]
-mod tests {}
