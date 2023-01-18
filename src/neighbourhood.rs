@@ -6,7 +6,7 @@ pub type Knb = HashMap<RowId, Vec<i32>>;
 pub type Ndf = HashMap<RowId, f64>;
 pub type Rknb = HashMap<RowId, HashSet<i32>>;
 
-fn euclidean_distance(v1: &[f64], v2: &[f64]) -> f64 {
+fn calculate_euclidean_distance(v1: &[f64], v2: &[f64]) -> f64 {
     let mut distance = 0.0;
     for i in 0..v1.len() {
         distance += (v1[i] - v2[i]).powf(2.0);
@@ -14,9 +14,9 @@ fn euclidean_distance(v1: &[f64], v2: &[f64]) -> f64 {
     return distance.sqrt();
 }
 
-pub fn neighbourhood(vectors: &Vec<&[f64]>, k: i32) -> (Knb, Rknb) {
+pub fn calculate_neighbourhood(vectors: &Vec<&[f64]>, k: i32) -> (Knb, Rknb) {
     let start = Instant::now();
-    let (mut knb, mut r_knb) = init(vectors.len()); // allocate knb and r_knb dicts
+    let (mut knb, mut r_knb) = init_neighbourhood(vectors.len()); // allocate knb and r_knb dicts
     let duration = start.elapsed();
     println!("Init neighbourhood took: {:?}", duration);
 
@@ -26,7 +26,7 @@ pub fn neighbourhood(vectors: &Vec<&[f64]>, k: i32) -> (Knb, Rknb) {
         for (row_index_2, row_2) in vectors.iter().enumerate() {
             if row_index_1 != row_index_2 {
                 // for each different object count euclidean distance and add it to neighbour candidates
-                let dist = euclidean_distance(&row_1, &row_2);
+                let dist = calculate_euclidean_distance(&row_1, &row_2);
                 neighbour_candidates.push((row_index_2 as RowId, dist));
             }
         }
@@ -35,13 +35,13 @@ pub fn neighbourhood(vectors: &Vec<&[f64]>, k: i32) -> (Knb, Rknb) {
         neighbour_candidates.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
 
         // eps is distance of k-th candidate in sorted candidates
-        let eps = neighbour_candidates[(k - 1) as usize].1;
+        let furthest_neighbour_distance = neighbour_candidates[(k - 1) as usize].1;
 
         let mut neighbours: Vec<RowId> = Vec::new();
 
         // if distance is smaller than or equal to eps then it is a nearest neighbour. There may be more neighbours than k value
         for (row_id, distance) in neighbour_candidates {
-            if distance > eps {
+            if distance > furthest_neighbour_distance {
                 break; // breaking so for is stopping earlier
             }
             neighbours.push(row_id);
@@ -58,7 +58,7 @@ pub fn neighbourhood(vectors: &Vec<&[f64]>, k: i32) -> (Knb, Rknb) {
     return (knb, r_knb);
 }
 
-pub fn ndf(knb: &Knb, r_knb: &Rknb) -> Ndf {
+pub fn calculate_ndf(knb: &Knb, r_knb: &Rknb) -> Ndf {
     let mut ndf = HashMap::new();
 
     for k in knb.keys() {
@@ -69,7 +69,7 @@ pub fn ndf(knb: &Knb, r_knb: &Rknb) -> Ndf {
     return ndf;
 }
 
-fn init(vectors_number: usize) -> (Knb, Rknb) {
+fn init_neighbourhood(vectors_number: usize) -> (Knb, Rknb) {
     let knb = HashMap::new();
     let mut r_knb = HashMap::new();
 
@@ -81,7 +81,7 @@ fn init(vectors_number: usize) -> (Knb, Rknb) {
 
 #[cfg(test)]
 mod tests {
-    use crate::neighbourhood::{ndf, neighbourhood, Knb, Ndf, Rknb};
+    use crate::neighbourhood::{calculate_ndf, calculate_neighbourhood, Knb, Ndf, Rknb};
     use std::collections::{HashMap, HashSet};
 
     #[test]
@@ -112,7 +112,7 @@ mod tests {
             (4, HashSet::from_iter([2, 3])),
         ]);
 
-        let (knb, r_knb) = neighbourhood(&vectors, k);
+        let (knb, r_knb) = calculate_neighbourhood(&vectors, k);
 
         assert_eq!(expected_knb, knb);
         assert_eq!(expected_r_knb, r_knb);
@@ -137,8 +137,8 @@ mod tests {
             (4, 1.0),
         ]);
 
-        let (knb, r_knb) = neighbourhood(&vectors, k);
-        let ndf = ndf(&knb, &r_knb);
+        let (knb, r_knb) = calculate_neighbourhood(&vectors, k);
+        let ndf = calculate_ndf(&knb, &r_knb);
 
         assert_eq!(expected_ndf, ndf);
     }

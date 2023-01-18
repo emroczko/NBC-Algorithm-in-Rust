@@ -1,8 +1,8 @@
-use crate::neighbourhood::{ndf, neighbourhood, Ndf, RowId};
+use crate::neighbourhood::{calculate_ndf, calculate_neighbourhood, Ndf, RowId};
 use std::collections::btree_map::BTreeMap;
 use std::time::Instant;
 
-pub fn nbc(vectors: &Vec<&[f64]>, k: i32) -> BTreeMap<RowId, i32> {
+pub fn neighbourhood_based_clustering(vectors: &Vec<&[f64]>, k: i32) -> BTreeMap<RowId, i32> {
     let mut clusters: BTreeMap<RowId, i32> = BTreeMap::new();
 
     for (point, _) in vectors.iter().enumerate() {
@@ -10,11 +10,11 @@ pub fn nbc(vectors: &Vec<&[f64]>, k: i32) -> BTreeMap<RowId, i32> {
     }
 
     let start = Instant::now();
-    let (knb, r_knb) = neighbourhood(vectors, k);
+    let (knb, r_knb) = calculate_neighbourhood(vectors, k);
     let duration = start.elapsed();
     println!("Exploring neighbourhood took: {:?}", duration);
 
-    let ndf = ndf(&knb, &r_knb);
+    let ndf = calculate_ndf(&knb, &r_knb);
     let mut current_cluster_id = 0;
 
     for (row_id, _) in vectors.iter().enumerate() {

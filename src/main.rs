@@ -2,7 +2,7 @@ use crate::drawer::{draw_clustering_data, PlotType};
 use crate::file_manager::{
     read_vectors_from_file, write_clustering_result_to_file, write_times_result_to_file,
 };
-use crate::nbc::nbc;
+use crate::nbc::neighbourhood_based_clustering;
 use crate::vector_manager::{convert_vector_data, get_number_of_groups, merge_data, rand_index};
 use clap::Parser;
 use std::fs;
@@ -72,7 +72,7 @@ fn perform_normal_nbc(args: &Args) {
     println!("Starting NBC...");
     let vectors = convert_vector_data(&vectors_data);
     let start = Instant::now();
-    let nbc_result = nbc(&vectors, k_value);
+    let nbc_result = neighbourhood_based_clustering(&vectors, k_value);
     let duration = start.elapsed();
     println!("NBC algorithm for file {} took: {:?}", file_name, duration);
 
@@ -131,7 +131,7 @@ fn perform_nbc_tests(args: &Args) {
             println!("Starting NBC...");
             let vectors = convert_vector_data(&vectors_data);
             let start = Instant::now();
-            let _ = nbc(&vectors, k_value);
+            let _ = neighbourhood_based_clustering(&vectors, k_value);
             let duration = start.elapsed();
             time_results.push((vectors_data.len(), duration, file_name.to_string()));
             println!("NBC algorithm for file {} took: {:?}", file_name, duration);
